@@ -1,0 +1,32 @@
+﻿@model MyWebApp.Models.UsersViewModel
+@{
+    ViewData["Title"] = "Edit Data";
+    var errorMessage = TempData["errorMessage"]?.ToString();
+}
+
+<h3>@ViewData["Title"]</h3>
+<hr />
+<form action="View" method="post" autocomplete="off">
+    <div class="mb-2" hidden>
+        <label class="form-label">ID</label>
+        <input type="text" class="form-control" asp-for="ID" readonly />
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" asp-for="Name" readonly />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Address</label>
+        <input type="text" class="form-control" asp-for="Address" readonly />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Marks</label>
+        <input type="number" class="form-control" asp-for="Marks" readonly />
+        <span asp-validation-for="Marks" class="text-danger"></span>
+    </div>
+    <div class="d-grid">
+        <button type="button" class="btn btn-primary" onclick="history.back()">Back</button>
+    </div>
+</form>

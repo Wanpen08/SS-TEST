@@ -1,0 +1,201 @@
+﻿@model List<MyWebApp.Models.UsersViewModel>
+@{
+    ViewData["Title"] = "Studens Details";
+    var successMessage = TempData["successMessage"]?.ToString();
+    var errorMessage = TempData["errorMessage"]?.ToString();
+}
+
+<h3>@ViewData["Title"]</h3>
+<hr />
+@if (!string.IsNullOrWhiteSpace(@successMessage))
+{
+    <div class="alert alert-success">
+        <strong>Success! </strong>@successMessage
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert"></button>
+    </div>
+}
+else if (!string.IsNullOrWhiteSpace(@errorMessage))
+{
+    <div class="alert alert-danger">
+        <strong>Error! </strong>@errorMessage
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert"></button>
+    </div>
+}
+<form>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <button asp-controller="User" asp-action="Create" class="btn btn-primary btn-sm">Add New Student</button>
+        <div class="d-flex align-items-center">
+            <input type="text" id="searchInput" class="form-control me-2" placeholder="Search by Name">
+            <button class="btn btn-primary btn-sm" onclick="searchTable()">Search</button>
+        </div>
+    </div>
+    @* <button asp-controller="User" asp-action="Create" class="btn btn-primary btn-group-sm">Add New Student</button>
+    <div class="mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by Name">
+        <button class="btn btn-primary mt-2" onclick="searchTable()">Search</button>
+    </div> *@
+    <table id="UserTable" class="table table-responsive table-hover table-bordered mt-2">
+        <thead>
+            <tr class="table-active">
+                <th>#</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Marks</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int count = 1;
+                @foreach(var users in Model)
+                {
+                    <tr>
+                        <td>@count</td>
+                        <td>@users.Name</td>
+                        <td>@users.Address</td>
+                        <td>@users.Marks</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a asp-controller = "User" asp-action = "View" asp-route-id = "@users.ID" class="btn btn-primary">View</a>
+                                <a asp-controller = "User" asp-action = "Edit" asp-route-id = "@users.ID" class="btn btn-warning">Edit</a>
+                                <button asp-controller="User" asp-action="GetDetails" asp-route-id="@users.ID"
+                                        type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#exampleModal" data-user-id="@users.ID"
+                                        onclick="GetDetailsUser(@users.ID)">
+                                    Delete
+                                </button>
+
+                                @* <a asp-controller="User" asp-action="Delete" asp-route-id="@users.ID" data-bs-toggle="modalDelete" data-bs-target="#ModalDelete"> class="btn btn-danger">Delete</a> *@
+                            </div>
+                        </td>
+                    </tr>
+                    count++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5">
+                        <div>
+                            No data Available in table
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>
+
+@* Popup Delete *@
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Delete Data</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="deleteForm" action="Delete" method="post">
+                    <div class="mb-2" hidden>
+                        <label class="form-label">ID</label>
+                        <input type="text" class="form-control" id="modalUserID" readonly />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" id="modalUserName" readonly />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" id="modalUserAddress" readonly />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Marks</label>
+                        <input type="number" class="form-control" id="modalUserMarks" readonly />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger" onclick="openDeleteModal(document.getElementById('modalUserID').value)">Delete</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function GetDetailsUser(userId) {
+        $.ajax({
+            url: '/User/GetDetails',
+            type: 'GET',
+            data: { id: userId },
+            success: function (data) {
+                // Populate the modal fields with the data
+                $('#modalUserID').val(data.id);
+                $('#modalUserName').val(data.name);
+                $('#modalUserAddress').val(data.address);
+                $('#modalUserMarks').val(data.marks);
+            },
+            error: function () {
+                alert('Error fetching user details.');
+            }
+        });
+    }
+
+    function openDeleteModal(id) {
+        $.ajax({
+            url: '/User/Delete',
+            type: 'POST',
+            data: { ID: id },
+            success: function (data) {
+                $('#exampleModal').modal('hide');
+                location.reload();
+            },
+            error: function () {
+                alert('Error fetching user details.');
+            }
+        });
+    }
+
+    function searchTable(event) {
+
+        event.preventDefault();
+
+        var input = document.getElementById("searchInput").value.toLowerCase();
+        var table = document.getElementById("UserTable"); 
+        var rows = table.getElementsByTagName("tr");
+
+        for (var i = 1; i < rows.length; i++) {
+            var tdName = rows[i].getElementsByTagName("td")[1]; 
+            var tdAddress = rows[i].getElementsByTagName("td")[2]; 
+            var tdMarks = rows[i].getElementsByTagName("td")[3]; 
+
+            if (tdName || tdAddress || tdMarks) {
+                var nameText = tdName ? tdName.textContent || tdName.innerText : "";
+                var addressText = tdAddress ? tdAddress.textContent || tdAddress.innerText : "";
+                var marksText = tdMarks ? tdMarks.textContent || tdMarks.innerText : "";
+
+
+                var combinedText = nameText + " " + addressText + " " + marksText;
+
+                if (combinedText.toLowerCase().indexOf(input) > -1) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+
+    document.getElementById('searchInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            searchTable(e); 
+        }
+    });
+
+    document.querySelector('button[onclick="searchTable()"]').addEventListener('click', function (e) {
+        searchTable(e); 
+    });
+
+</script>

@@ -1,0 +1,38 @@
+﻿@model MyWebApp.Models.UsersViewModel
+@{
+    ViewData["Title"] = "Edit Data";
+    var errorMessage = TempData["errorMessage"]?.ToString();
+}
+
+<h3>@ViewData["Title"]</h3>
+<hr />
+<form action="Edit" method="post" autocomplete="off">
+    <div class="mb-2" hidden>
+        <label class="form-label">ID</label>
+        <input type="text" class="form-control" asp-for="ID" readonly hidden />
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" asp-for="Name" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Address</label>
+        <input type="text" class="form-control" asp-for="Address" />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Marks</label>
+        <input type="number" class="form-control" asp-for="Marks" />
+        <span asp-validation-for="Marks" class="text-danger"></span>
+    </div>
+    <div class="d-grid">
+        <button type="submit" class="btn btn-primary">Update</button>
+    </div>
+</form>
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
